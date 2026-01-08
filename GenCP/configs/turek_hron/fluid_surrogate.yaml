@@ -1,0 +1,67 @@
+# exp
+exp_name: "SiT_turek_hron_data_fluid_surrogate"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "turek_hron_data" # fluidzero_data, double_cylinder_simulation_data, double_cylinder_measurement_data
+dataset_path: "/path/to/gencp_dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # 限制使用的数据量，null表示使用全部数据
+length: 999 # 1000
+dt: 4
+sdf_threshold: 0.02
+
+# choose
+stage: "fluid" # structure, fluid
+model_name: "SiT" # SiT, UNet3d, CNO
+
+# 训练框架选择 - 使用普通代理模型
+use_torchcfm: False
+use_diffusion: False 
+use_surrogate: True  # 新增：普通代理模型框架
+
+# model
+is_resume: False
+checkpoint_path: /path/to/results/turek_hron_data/fluid_SiT/checkpoint/best_main_model.pth
+input_size: [300, 200] # [322, 226]
+in_channels: 4
+hidden_size: 256 # 768
+patch_size: [4, 4]
+num_heads: 8 # 12 
+depth: 6 # 12 
+use_wavelet: False
+
+# training
+is_use_tb: True
+x0_is_use_noise: False  # 普通代理模型不使用噪声
+test_interval: 50
+train_batch_size: 8
+test_batch_size: 8
+
+input_step: 10   # 输入5步历史数据
+output_step: 10  # 预测10步未来数据
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.001
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 10000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 10000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 1  # 普通代理模型只需要一步推理
+
+# visualize
+save_figs_path: "./visualization_results"

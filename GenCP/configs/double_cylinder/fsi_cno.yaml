@@ -1,0 +1,79 @@
+exp_name: "CNO_double_cylinder_data_fsi"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "double_cylinder_data"
+dataset_path: "/path/to/gencp_dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # Limit dataset size, null means use all data
+length: 999 # 1000
+dt: 10
+sdf_threshold: 0.04
+
+# model
+model_name: "CNO"
+fluid_checkpoint_path: /path/to/results/double_cylinder_data/fluid_CNO/checkpoint/best_main_model.pth
+structure_checkpoint_path: /path/to/results/double_cylinder_data/structure_CNO/checkpoint/best_main_model.pth
+stage: "couple"  # fluid, structure, fsi
+input_size: [128, 128] #[322, 226]
+in_size: 128
+in_dim: 4
+# fluid
+out_dim_fluid: 3
+depth_fluid: 4 # 12 
+# structure
+out_dim_structure: 1
+depth_structure: 2 # 12 
+
+# inference
+debug_flow: false
+num_inference_steps: 1
+use_coupled_sampling: True
+
+coupled: True
+flag: jacobi  # jacobi, lie, strang
+
+mode: "ODE"  # SDE, ODE
+# SDE parameters
+diffusion_coeff: 0.1
+diffusion_form: "constant"  # constant, decreasing, increasing
+diffusion_norm: 1.0
+last_step: "euler"  # euler, deterministic
+last_step_size: 0.04
+sampling_method: "Euler"  # Euler, Heun
+
+# training
+is_use_tb: True
+x0_is_use_noise: True
+test_interval: 100
+train_batch_size: 8
+test_batch_size: 10
+
+input_step: 3
+output_step: 12
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.0005
+sigma: 0.01
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 10000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 10000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 10
+
+# visualize
+save_figs_path: "./visualization_results"

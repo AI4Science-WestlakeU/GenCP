@@ -1,0 +1,112 @@
+# exp
+exp_name: "GenCP_ntcouple_multi_SiT_FNO_surrogate"
+gpu: 0
+seed: 42
+results_path: "./results/"
+
+# data
+dataset_name: "ntcouple"
+dataset_path: "/path/to/gencp_dataset/NTcouple/"
+num_workers: 8
+normalizer: "ntcouple"  # Use NTcouple fixed-bound normalizer
+n_data_set: null  # null for all data, or specify number for quick experiments
+length: 16  # Time steps (T dimension)
+
+# choose
+model_name: "SiT_FNO"  # CNO, SiT, FNO, SiT_FNO
+
+use_torchcfm: False
+use_diffusion: False 
+use_surrogate: True
+
+# model - Neutron field
+stage: "neutron"  # Default stage (used for neutron field)
+input_size: [64, 20]  # [H, W] spatial dimensions for neutron field (used as default)
+in_channels: 2  # Input: cond(2ch: spatial_cond + bc_expanded) - will be overridden per-field
+in_size: 64  # Input spatial size (height) - used as default
+out_dim_neutron: 1  # Output: target channels (neutron flux)
+out_channels_neutron: 1  # Same as out_dim for SiT_FNO
+depth_neutron: 4  # Number of transformer layers
+hidden_size_neutron: 128  # Hidden size for neutron field
+patch_size_neutron: [2, 1]  # Patch size for spatial tokenization
+num_heads_neutron: 4  # Number of attention heads
+modes_neutron: 4  # FNO modes for spectral operations
+channel_multiplier: 16  # Channel width multiplier (kept for reference)
+width_neutron: 16
+modes_t_neutron: 4
+modes_x_neutron: 4
+modes_y_neutron: 4
+
+# model - Solid field
+# Note: solid field uses different input_size [64, 8] and in_channels=2, but load_model uses global args
+# These will be overridden per-field if needed
+in_channels_structure: 3  # Input: cond(2ch: neutron_flux + fluid_inlet_temp)
+out_dim_structure: 1  # Output: target channels (fuel temperature)
+out_channels_structure: 1  # Same as out_dim for SiT_FNO
+depth_structure: 4  # Number of transformer layers
+hidden_size_structure: 128  # Hidden size for solid field
+patch_size_structure: [2, 1]  # Patch size for spatial tokenization
+num_heads_structure: 4  # Number of attention heads
+modes_structure: 4  # FNO modes for spectral operations
+width_structure: 16
+modes_t_structure: 4
+modes_x_structure: 4
+modes_y_structure: 4
+
+# model - Fluid field
+# Note: fluid field uses different input_size [64, 12] and in_channels=1, but load_model uses global args
+# These will be overridden per-field if needed
+in_channels_fluid: 1  # Input: cond(1ch: heat_flux from fuel boundary)
+out_dim_fluid: 4  # Output: target channels [temperature, velocity_x, velocity_y, pressure]
+out_channels_fluid: 4  # Same as out_dim for SiT_FNO
+depth_fluid: 4  # Number of transformer layers
+hidden_size_fluid: 256  # Larger hidden size for multi-channel fluid output
+patch_size_fluid: [2, 1]  # Patch size for spatial tokenization
+num_heads_fluid: 4  # Number of attention heads
+modes_fluid: 4  # FNO modes for spectral operations
+width_fluid: 32
+modes_t_fluid: 4
+modes_x_fluid: 4
+modes_y_fluid: 4
+
+# training
+is_use_tb: False  # Disable tensorboard (TF import issues)
+x0_is_use_noise: True
+test_interval: 1000
+train_batch_size: 4  # Smaller batch size for 3D data
+test_batch_size: 50
+
+input_step: 1  # For ntcouple, we use pre-loaded conditioning
+output_step: 1
+stride: 1
+num_delta_t: 0
+
+lr: 0.0002
+sigma: 0.01
+dropout: 0.1  # Dropout for regularization
+
+# iteration
+train_mode: "iteration"  # epoch, iteration
+total_iterations: 100000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 100000
+eta_min: 1e-6
+# step
+step_size: 10000
+gamma: 0.8
+
+# inference
+num_sampling_steps: 25
+num_inference_steps: 100  # For surrogate inference
+
+# visualize
+save_figs_path: "./visualization_results/ntcouple_multi_surrogate"
+
+# ntcouple specific
+use_accelerator: False  # Set to True for multi-GPU training
+mixed_precision: "no"  # "no", "fp16", "bf16"
+gradient_accumulation_steps: 1
+

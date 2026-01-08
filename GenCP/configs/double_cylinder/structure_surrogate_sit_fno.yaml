@@ -1,0 +1,69 @@
+# exp
+exp_name: "SiT_FNO_double_cylinder_data_fluid"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "double_cylinder_data" # fluidzero_data, double_cylinder_simulation_data, double_cylinder_measurement_data
+dataset_path: "/path/to/dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # 限制使用的数据量，null表示使用全部数据
+length: 999 # 1000
+dt: 10
+sdf_threshold: 0.04
+
+# choose
+stage: "structure" # structure, fluid
+model_name: "SiT_FNO" # SiT, UNet3d, CNO
+
+use_torchcfm: False
+use_diffusion: False 
+use_surrogate: True
+
+# model
+is_resume: False
+checkpoint_path: /path/to/model/double_cylinder_data/structure_SiT_FNO_surrogate/model.pth
+input_size: [128, 128] # [322, 226]
+in_channels: 7
+out_channels: 1
+hidden_size: 64 # 768
+patch_size: [2, 2]
+num_heads: 4 # 12 
+depth: 4 # 12 
+modes: 4
+use_wavelet: False
+
+# training
+is_use_tb: True
+test_interval: 1000
+train_batch_size: 8
+test_batch_size: 10
+
+input_step: 3
+output_step: 12
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.0003
+sigma: 0.01
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 20000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 20000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 10
+
+# visualize
+save_figs_path: "./visualization_results"
+

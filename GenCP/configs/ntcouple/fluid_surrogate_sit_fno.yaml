@@ -1,0 +1,77 @@
+# exp
+exp_name: "GenCP_ntcouple_fluid_SiT_FNO_surrogate"
+gpu: 0
+seed: 42
+results_path: "./results/"
+
+# data
+dataset_name: "ntcouple"
+dataset_path: "/path/to/gencp_dataset/NTcouple/"
+field: "fluid"  # neutron, solid, fluid
+split: "decouple_train"    # decouple_train, decouple_val, couple_train, couple_val
+num_workers: 8
+normalizer: "ntcouple"  # Use NTcouple fixed-bound normalizer
+n_data_set: null  # null for all data, or specify number for quick experiments
+length: 16  # Time steps (T dimension)
+
+# choose
+stage: "fluid"  # For ntcouple: neutron, solid, fluid
+model_name: "SiT_FNO"  # CNO, SiT, FNO, SiT_FNO
+
+use_torchcfm: False
+use_diffusion: False 
+use_surrogate: True
+
+# model - SiT_FNO surrogate for NTcouple fluid/coolant field
+is_resume: False
+checkpoint_path: null
+input_size: [64, 12]  # [H, W] spatial dimensions for fluid field (coolant channel: 64 height x 12 axial)
+in_channels: 1  # Input: cond(1ch: heat_flux from fuel boundary)
+out_channels: 4  # Output: target channels [temperature, velocity_x, velocity_y, pressure]
+hidden_size: 256  # Larger hidden size for multi-channel output
+patch_size: [2, 1]  # Standard patch size for SiT_FNO
+num_heads: 4  # Number of attention heads
+depth: 4  # Number of transformer layers
+modes: 4  # FNO modes for spectral operations
+
+# training
+is_use_tb: False  # Disable tensorboard (TF import issues)
+x0_is_use_noise: True
+test_interval: 1000
+train_batch_size: 16 # Smaller batch size for 3D data
+test_batch_size: 16
+
+input_step: 1  # For ntcouple, we use pre-loaded conditioning
+output_step: 1
+stride: 1
+num_delta_t: 0
+
+lr: 0.001
+sigma: 0.01
+dropout: 0.1  # Dropout for regularization
+
+# iteration
+train_mode: "iteration"  # epoch, iteration
+total_iterations: 10000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 10000
+eta_min: 1e-7
+# step
+step_size: 10000
+gamma: 0.8
+
+# inference
+num_sampling_steps: 25
+num_inference_steps: 100  # For surrogate inference
+
+# visualize
+save_figs_path: "./visualization_results"
+
+# ntcouple specific
+use_accelerator: False  # Set to True for multi-GPU training
+mixed_precision: "no"  # "no", "fp16", "bf16"
+gradient_accumulation_steps: 1
+

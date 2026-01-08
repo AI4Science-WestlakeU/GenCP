@@ -1,0 +1,85 @@
+exp_name: "SiT_FNO_double_cylinder_data_fsi"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "double_cylinder_data"
+dataset_path: "/path/to/gencp_dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # 限制使用的数据量，null表示使用全部数据
+length: 999 # 1000
+dt: 8
+sdf_threshold: 0.04
+
+# model
+model_name: "SiT_FNO"
+fluid_checkpoint_path: /path/to/results/double_cylinder_data/fluid_SiT_FNO/checkpoint/best_main_model.pth
+structure_checkpoint_path: /path/to/results/double_cylinder_data/structure_SiT_FNO/checkpoint/best_main_model.pth
+stage: "couple" # fluid, structure, fsi, actually fsi here will not be used at all
+input_size: [128, 128] #[322, 226]
+in_channels: 4
+# fluid
+out_channels_fluid: 3
+hidden_size_fluid: 256
+patch_size_fluid: [2, 2]
+num_heads_fluid: 4
+depth_fluid: 4
+modes_fluid: 4
+# structure
+out_channels_structure: 1
+hidden_size_structure: 128
+patch_size_structure: [2, 2]
+num_heads_structure: 4
+depth_structure: 4
+modes_structure: 4
+
+# inference
+num_inference_steps: 1 # 3
+use_coupled_sampling: True # 启用新的交替耦合采样方法 (1+1)×10
+
+coupled: True # 是否用create_couple_step_fn做采样
+flag: jacobi # [jacobi, lie, strang]
+
+mode: "ODE" # SDE, ODE
+# SDE参数设置
+diffusion_coeff: 0.1          # 扩散系数强度 (调整随机性大小)
+diffusion_form: "constant"    # 扩散形式: constant, decreasing, increasing
+diffusion_norm: 1.0           # 扩散归一化系数
+last_step: "euler"            # 最后一步采样方法: euler, deterministic
+last_step_size: 0.04          # 最后一步的步长
+sampling_method: "Euler"      # 采样方法: Euler, Heun
+
+# training
+is_use_tb: True
+x0_is_use_noise: True
+test_interval: 100
+train_batch_size: 8
+test_batch_size: 10
+
+input_step: 3
+output_step: 12
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.0005
+sigma: 0.01
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 10000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 10000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 10
+
+# visualize
+save_figs_path: "./visualization_results"

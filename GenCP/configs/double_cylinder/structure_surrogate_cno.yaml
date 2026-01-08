@@ -1,0 +1,66 @@
+# exp
+exp_name: "CNO_double_cylinder_data_structure"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "double_cylinder_data"
+dataset_path: "/path/to/gencp_dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # 限制使用的数据量，null表示使用全部数据
+length: 999 # 1000
+dt: 10
+sdf_threshold: 0.04
+
+# choose
+stage: "structure" # structure, fluid
+model_name: "CNO" # SiT, UNet3d, CNO
+
+use_torchcfm: False
+use_diffusion: False 
+use_surrogate: True
+
+# model
+is_resume: False
+checkpoint_path: /path/to/model/double_cylinder_data/structure_CNO_surrogate/model.pth
+input_size: [128, 128] # [322, 226]
+in_dim: 7
+out_dim: 1
+in_size: 128
+depth: 2 # 12 
+channel_multiplier: 8
+
+# training
+is_use_tb: True
+test_interval: 1000
+train_batch_size: 8
+test_batch_size: 50
+
+input_step: 3
+output_step: 12
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.001
+sigma: 0.01
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 20000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 20000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 10
+
+# visualize
+save_figs_path: "./visualization_results"
+

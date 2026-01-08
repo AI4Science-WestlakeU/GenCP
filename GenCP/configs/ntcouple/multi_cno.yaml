@@ -1,0 +1,91 @@
+# exp
+exp_name: "GenCP_ntcouple_multi_CNO"
+gpu: 0
+seed: 42
+results_path: "./results/"
+
+# data
+dataset_name: "ntcouple"
+dataset_path: "/path/to/gencp_dataset/NTcouple/"
+num_workers: 8
+normalizer: "ntcouple"  # Use NTcouple fixed-bound normalizer
+n_data_set: null  # null for all data, or specify number for quick experiments
+length: 16  # Time steps (T dimension)
+
+# choose
+model_name: "CNO"  # CNO, SiT, FNO
+channel_multiplier: 16  # Channel width multiplier
+input_size: [64, 20]  # [H, W] spatial dimensions for neutron field (used as default)
+in_size: 64  # Input spatial size (height) - used as default
+
+use_torchcfm: True
+use_diffusion: False 
+use_surrogate: False
+
+# model - Neutron field
+out_dim_neutron: 1  # Target channels: neutron flux
+out_channels_neutron: 1  # Same as out_dim for CNO
+depth_neutron: 2  # Number of CNO layers
+
+# model - Solid field
+out_dim_structure: 1  # Target channels: fuel temperature
+out_channels_structure: 1  # Same as out_dim for CNO
+depth_structure: 2  # Number of CNO layers
+
+# model - Fluid field
+out_dim_fluid: 4  # Target channels: [temperature, velocity_x, velocity_y, pressure]
+out_channels_fluid: 4  # Same as out_dim for CNO
+depth_fluid: 4  # Number of CNO layers
+
+# training
+is_use_tb: False  # Disable tensorboard (TF import issues)
+x0_is_use_noise: True
+use_clean_left_bc_for_solid: True  # True: 最左侧固体温度BC保持clean（不加噪）; False: 最左侧BC也参与CFM加噪
+use_noise_concat: False  # True: decompose yt=[y1, E] where E=yt-y1; False: use yt directly
+use_clean_cond: False
+test_solid: False  # True: 温度场BC全程使用clean状态（不加噪）; False: 温度场BC也参与CFM加噪
+
+# # Reference blending settings (only effective when use_noise_concat=True)
+# num_outer_iterations: 1  # Number of outer refinement loops
+# use_noise_reference: True  # True: use pure noise as reference (GT-free); False: use GT if available
+# initial_gt_weight: 0.0  # Weight at t=0 (0.0=pure estimated, 1.0=pure reference)
+# final_gt_weight: 1.0    # Weight at t=1 (0.0=pure estimated, 1.0=pure reference)
+# weight_schedule: "linear"  # Schedule type: linear, cosine, quadratic, exponential, inverse_quadratic
+#                            # Only used when initial_gt_weight != final_gt_weight
+
+test_interval: 1000
+train_batch_size: 4  # Smaller batch size for 3D data
+test_batch_size: 50
+
+input_step: 1  # For ntcouple, we use pre-loaded conditioning
+output_step: 1
+stride: 1
+num_delta_t: 0
+
+lr: 0.0001
+sigma: 0.0
+
+# iteration
+train_mode: "iteration"  # epoch, iteration
+total_iterations: 100000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 100000
+# step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 100
+
+# visualize
+save_figs_path: "./visualization_results"
+
+# ntcouple specific
+use_accelerator: False  # Set to True for multi-GPU training
+mixed_precision: "no"  # "no", "fp16", "bf16"
+gradient_accumulation_steps: 1
+
+

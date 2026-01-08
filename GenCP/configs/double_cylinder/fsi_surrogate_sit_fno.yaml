@@ -1,0 +1,93 @@
+exp_name: "SiT_double_cylinder_data_fsi"
+gpu: 0
+seed: 0
+results_path: "./results/"
+
+# data
+dataset_name: "double_cylinder_data"
+dataset_path: "/path/to/gencp_dataset/"
+num_workers: 12
+normalizer: "range"
+n_data_set: null  # 限制使用的数据量，null表示使用全部数据
+length: 999 # 1000
+dt: 10
+sdf_threshold: 0.04
+
+# model
+model_name: "SiT_FNO"
+use_surrogate: True
+fluid_checkpoint_path: /path/to/results/double_cylinder_data/fluid_SiT_FNO_surrogate/checkpoint/model.pth
+structure_checkpoint_path: /path/to/results/double_cylinder_data/structure_SiT_FNO_surrogate/checkpoint/model.pth
+stage: "couple" # fluid, structure, fsi, actually fsi here will not be used at all
+use_torchcfm: False
+use_diffusion: False
+input_size: [128, 128] # [322, 226]
+patch_size: [2, 2]
+
+
+# fluid
+in_channels_fluid: 5
+out_channels_fluid: 3
+hidden_size_fluid: 128
+num_heads_fluid: 4 # 12 
+depth_fluid: 4 # 12 
+modes_fluid: 4
+# structure
+in_channels_structure: 7
+out_channels_structure: 1
+hidden_size_structure: 64
+num_heads_structure: 4 # 12 
+depth_structure: 4 # 12 
+modes_structure: 4
+
+# inference
+pred_update_coeff: 0.1
+num_inference_steps: 100 # 3
+
+debug_flow: false # 启用debug模式，保存每步可视化结果
+use_coupled_sampling: True # 启用新的交替耦合采样方法 (1+1)×10
+
+coupled: True # 是否用create_couple_step_fn做采样
+flag: jacobi # [jacobi, lie, strang]
+
+mode: "ODE" # SDE, ODE
+# SDE参数设置
+diffusion_coeff: 0.1          # 扩散系数强度 (调整随机性大小)
+diffusion_form: "constant"    # 扩散形式: constant, decreasing, increasing
+diffusion_norm: 1.0           # 扩散归一化系数
+last_step: "euler"            # 最后一步采样方法: euler, deterministic
+last_step_size: 0.04          # 最后一步的步长
+sampling_method: "Euler"      # 采样方法: Euler, Heun
+
+# training
+is_use_tb: True
+x0_is_use_noise: True
+test_interval: 100
+train_batch_size: 8
+test_batch_size: 10
+
+input_step: 3
+output_step: 12
+stride: 1
+num_delta_t: 0 # 20
+
+lr: 0.0005
+sigma: 0.01
+
+# iteration
+train_mode: "iteration" # epoch, iteration
+total_iterations: 10000
+epochs: 1000
+
+scheduler: "cosine"
+# cosine
+T_max: 10000
+#step
+step_size: 50
+gamma: 0.5
+
+# inference
+num_sampling_steps: 25
+
+# visualize
+save_figs_path: "./visualization_results"
