@@ -552,12 +552,10 @@ class CNO3d(nn.Module):
         
         self.res_nets = nn.ModuleList(res_nets_list)    
 
-    def forward(self, x, t, cond=None, **kwargs):
+    def _forward_impl(self, x, t):
         """
-        Forward pass for CNO3d (without x0).
-        x: (B, T, H, W, C) input tensor
-        t: (B,) diffusion timestep
-        cond: Optional conditioning tensor (currently unused, included for API compatibility)
+        Core forward implementation that maps (B, T, H, W, C) -> (B, T, H, W, C_out).
+        This matches the original NTcouple forward behavior in this repository.
         """
         switch = False
         if x.dim() == 5 and x.shape[-1] < x.shape[1]:
@@ -570,56 +568,74 @@ class CNO3d(nn.Module):
                 t = t.squeeze()
             time_emb = self.time_embedding(t)
                  
-        #Execute Lift ---------------------------------------------------------
         x = self.lift(x, time_emb)
         skip = []
         
-        # Execute Encoder -----------------------------------------------------
         for i in range(self.N_layers):
-            
-            #Apply ResNet & save the result
             y = x
             for j in range(self.N_res):
                 y = self.res_nets[i*self.N_res + j](y, time_emb)
             skip.append(y)
-            
-            # Apply (D) block
-            x = self.encoder[i](x, time_emb)   
+            x = self.encoder[i](x, time_emb)
         
-        #----------------------------------------------------------------------
-        
-        # Apply the deepest ResNet (bottle neck)
         for j in range(self.N_res_neck):
             x = self.res_nets[-j-1](x, time_emb)
 
-        # Execute Decoder -----------------------------------------------------
         for i in range(self.N_layers):
-            
-            # Apply (I) block (ED_expansion) & cat if needed
             if i == 0:
-                x = self.ED_expansion[self.N_layers - i](x, time_emb) #BottleNeck : no cat
+                x = self.ED_expansion[self.N_layers - i](x, time_emb)
             else:
-                x = torch.cat((x, self.ED_expansion[self.N_layers - i](skip[-i], time_emb)),1)
+                x = torch.cat((x, self.ED_expansion[self.N_layers - i](skip[-i], time_emb)), 1)
             
             if self.add_inv:
                 x = self.decoder_inv[i](x, time_emb)
-            # Apply (U) block
             x = self.decoder[i](x, time_emb)
-        # Cat & Execute Projetion ---------------------------------------------
         
-        x = torch.cat((x, self.ED_expansion[0](skip[0], time_emb)),1)
+        x = torch.cat((x, self.ED_expansion[0](skip[0], time_emb)), 1)
         x = self.project(x, time_emb)
         
         del skip
         del y
 
         if switch:
-            x = x.permute(0, 2, 3, 4, 1)  # (B, C, T, H, W) -> (B, T, H, W, C)
+            x = x.permute(0, 2, 3, 4, 1)
 
         if self.out_dim_mult > 1:
             x = x.reshape(x.shape[0], x.shape[1], x.shape[2], x.shape[3], self.out_dim // self.out_dim_mult)
         
         return x
+
+    def forward(self, x, t, x0_or_cond=None, cond=None, **kwargs):
+        """
+        Compatible forward for both FSI and NTcouple.
+        
+        - FSI:        forward(xt, t, x0, cond)   (or keyword x0=..., cond=...)
+        - NTcouple:   forward(x_joint, t, cond)  (cond can be passed as 3rd positional or as cond=...)
+        """
+        # Backward compatibility for callers using keyword arguments:
+        if x0_or_cond is None and "x0" in kwargs:
+            x0_or_cond = kwargs.pop("x0")
+        if cond is None and "cond" in kwargs:
+            cond = kwargs.pop("cond")
+
+        if self.dataset_name == "ntcouple":
+            # NTcouple: keep original behavior; allow passing attrs either as 3rd positional or cond=...
+            if x0_or_cond is not None:
+                cond = x0_or_cond
+            return self._forward_impl(x, t)
+
+        # FSI: prepend x0 along time dim (when enabled) and then drop the prepended part.
+        x0 = x0_or_cond
+        if self.x0_is_use_noise:
+            if x0 is None:
+                raise ValueError("FSI mode requires x0 when x0_is_use_noise=True.")
+            t0 = x0.shape[1]
+            x_in = torch.cat([x0, x], dim=1)
+            out = self._forward_impl(x_in, t)
+            return out[:, t0:]
+
+        # If not using x0, behave like a plain conditional model.
+        return self._forward_impl(x, t)
 
 
 if __name__ == "__main__":

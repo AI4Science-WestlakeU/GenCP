@@ -614,19 +614,13 @@ class SiT_FNO(nn.Module):
         return x
 
 
-    def forward(self, x, t, cond=None, **kwargs):
+    def _forward_ntcouple_impl(self, x, t):
         """
-        Forward pass for SiT FNO.
-        x: (B, T, H, W, C) input tensor
-        t: (B,) diffusion timestep
-        cond: Optional conditioning tensor (currently unused, included for API compatibility)
+        Core NTcouple forward implementation that maps (B, T, H, W, C) -> (B, T, H, W, C_out).
+        This matches the original behavior of this repository's NTcouple path.
         """
-        # Standardize input shape from (B, T, H, W, C) to (B, C, F, H, W) for the model
-        # Note: Model expects 'F' (frames) as 3rd dim, which corresponds to 'T' in input
-        x = x.permute(0, 4, 1, 2, 3) # (B, T, H, W, C) -> (B, C, T, H, W)
-        
-        # Call latte forward logic directly
-        # We skip the data_preprocess step that was prepending x0
+        # Standardize input shape from (B, T, H, W, C) to (B, C, F, H, W)
+        x = x.permute(0, 4, 1, 2, 3)
         
         batches, channels, frames, height, width = x.shape
         
@@ -638,23 +632,21 @@ class SiT_FNO(nn.Module):
             temp_embed = self.temp_embed
             
         # Reshape for spatial processing: (b*f, c, h, w)
-        x = rearrange(x, 'b c f h w -> (b f) c h w')
+        x = rearrange(x, "b c f h w -> (b f) c h w")
         
         # Spatial patch embedding + positional encoding
-        x = self.x_embedder(x) + self.pos_embed  # (b*f, num_patches, hidden_dim)
+        x = self.x_embedder(x) + self.pos_embed
         
         # Timestep embedding
-        t_emb = self.t_embedder(t)  # (b, hidden_dim)
+        t_emb = self.t_embedder(t)
         
         # Prepare conditioning embeddings for spatial and temporal blocks
-        timestep_spatial = repeat(t_emb, 'b d -> (b f) d', f=frames)  # (b*f, hidden_dim)
-        timestep_temp = repeat(t_emb, 'b d -> (b p) d', p=self.pos_embed.shape[1])  # (b*num_patches, hidden_dim)
+        timestep_spatial = repeat(t_emb, "b d -> (b f) d", f=frames)
+        timestep_temp = repeat(t_emb, "b d -> (b p) d", p=self.pos_embed.shape[1])
         
         # Alternating spatial-temporal transformer blocks
         for i in range(0, len(self.blocks), 2):
-            # Ensure sufficient block pairs
             if i + 1 >= len(self.blocks):
-                # If odd number of blocks, treat the last one as spatial block
                 spatial_block = self.blocks[i]
                 x = spatial_block(x, timestep_spatial)
                 break
@@ -662,36 +654,45 @@ class SiT_FNO(nn.Module):
             spatial_block = self.blocks[i]
             temp_block = self.blocks[i + 1]
             
-            c = timestep_spatial
-            # Spatial attention block
-            x = spatial_block(x, c)
+            x = spatial_block(x, timestep_spatial)
+            x = rearrange(x, "(b f) p d -> (b p) f d", b=batches)
             
-            # Reshape for temporal processing: (b*num_patches, frames, hidden_dim)
-            x = rearrange(x, '(b f) p d -> (b p) f d', b=batches)
-            
-            # Add temporal positional embedding (only at first temporal block)
             if i == 0:
                 x = x + temp_embed
             
-            # Temporal attention block
-            c = timestep_temp
-            x = temp_block(x, c)
-            
-            # Reshape back for next spatial block: (b*f, num_patches, hidden_dim)
-            x = rearrange(x, '(b p) f d -> (b f) p d', b=batches)
+            x = temp_block(x, timestep_temp)
+            x = rearrange(x, "(b p) f d -> (b f) p d", b=batches)
         
-        # Final layer with spatial conditioning
         x = self.final_layer(x, timestep_spatial)
-        # Unpatchify: (b*f, c, h, w)
         x = self.unpatchify(x)
-        
-        # Reshape back to video format: (b, c, f, h, w)
-        x = rearrange(x, '(b f) c h w -> b c f h w', b=batches)
-        
-        # Permute back to (B, T, H, W, C) to match expected output format in train.py
-        x = x.permute(0, 2, 3, 4, 1) 
-
+        x = rearrange(x, "(b f) c h w -> b c f h w", b=batches)
+        x = x.permute(0, 2, 3, 4, 1)
         return x
+
+    def forward(self, x, t, x0_or_cond=None, cond=None, **kwargs):
+        """
+        Compatible forward for both FSI and NTcouple.
+        
+        - FSI:        forward(xt, t, x0, cond)   (or keyword x0=..., cond=...)
+        - NTcouple:   forward(x_joint, t, cond)  (cond can be passed as 3rd positional or as cond=...)
+        """
+        # Backward compatibility for callers using keyword arguments:
+        if x0_or_cond is None and "x0" in kwargs:
+            x0_or_cond = kwargs.pop("x0")
+        if cond is None and "cond" in kwargs:
+            cond = kwargs.pop("cond")
+
+        if self.dataset_name == "ntcouple":
+            # Keep original NTcouple behavior; allow attrs passed as 3rd positional or cond=...
+            if x0_or_cond is not None:
+                cond = x0_or_cond
+            return self._forward_ntcouple_impl(x, t)
+
+        # FSI: use the original Latte-style path that supports x0 concatenation.
+        x0 = x0_or_cond
+        if x0 is None:
+            raise ValueError("FSI mode requires x0 (initial condition) for SiT_FNO.")
+        return self.forward_latte(x, t, x0, cond)
     
     def forward_with_cfg(self, x, t, y, cfg_scale):
         """
