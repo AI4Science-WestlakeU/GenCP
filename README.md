@@ -1,8 +1,8 @@
-# GenCP: Towards Generative Modeling Paradigm of Coupled physics with Application to Fluid-Structure Interaction
+# GenCP: Towards Generative Modeling Paradigm of Coupled physics
 
 [Paper](URL) | [arXiv](URL) 
 
-Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics with Application to Fluid-Structure Interaction**.
+Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics**.
 
 Tianrun Gao*, Haoren Zheng*, Wenhao Deng*, Haodong Feng, Tao Zhang, Ruiqi Feng, Qianyi Chen, Tailin Wu.
 
