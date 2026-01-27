@@ -1,4 +1,4 @@
-# GenCP: Towards Generative Modeling Paradigm of Coupled physics
+# GenCP: Towards Generative Modeling Paradigm of Coupled physics (ICLR 2026)
 
 [Paper](URL) | [arXiv](URL) 
 
