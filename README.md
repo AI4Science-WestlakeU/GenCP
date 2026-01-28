@@ -92,11 +92,12 @@ If you find our work and/or our code useful, please cite us via:
 
 ```bibtex
 @inproceedings{
-    gencp2024,
-    title={GenCP: Generative Coupled Physics for Fluid-Structure Interaction},
-    author={Author names},
-    booktitle={Conference name},
-    year={2024}
+   anonymous2026gencp,
+   title={Gen{CP}: Towards Generative Modeling Paradigm of Coupled physics with Application to Fluid-Structure Interaction},
+   author={Anonymous},
+   booktitle={The Fourteenth International Conference on Learning Representations},
+   year={2026},
+   url={https://openreview.net/forum?id=tn2VAi1KIO}
 }
 ```
 
