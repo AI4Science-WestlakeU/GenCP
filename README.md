@@ -1,6 +1,6 @@
 # GenCP: Towards Generative Modeling Paradigm of Coupled physics (ICLR 2026)
 
-[Paper](https://openreview.net/forum?id=tn2VAi1KIO&referrer=%5BAuthor%20Console%5D(%2Fgroup%3Fid%3DICLR.cc%2F2026%2FConference%2FAuthors%23your-submissions)) | [arXiv](https://arxiv.org/abs/2601.19541)
+[Paper](https://openreview.net/forum?id=tn2VAi1KIO)) | [arXiv](https://arxiv.org/abs/2601.19541)
 
 Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics**.
 
@@ -92,9 +92,9 @@ If you find our work and/or our code useful, please cite us via:
 
 ```bibtex
 @inproceedings{
-   anonymous2026gencp,
-   title={Gen{CP}: Towards Generative Modeling Paradigm of Coupled physics with Application to Fluid-Structure Interaction},
-   author={Anonymous},
+   gao2026gencp,
+   title={Gen{CP}: Towards Generative Modeling Paradigm of Coupled physics},
+   author={Tianrun Gao and Haoren Zheng and Wenhao Deng and Haodong Feng and Tao Zhang and Ruiqi Feng and Qianyi Chen and Tailin Wu},
    booktitle={The Fourteenth International Conference on Learning Representations},
    year={2026},
    url={https://openreview.net/forum?id=tn2VAi1KIO}
