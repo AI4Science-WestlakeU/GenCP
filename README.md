@@ -1,6 +1,6 @@
 # GenCP: Towards Generative Modeling Paradigm of Coupled physics (ICLR 2026)
 
-[Paper](https://openreview.net/forum?id=tn2VAi1KIO)) | [arXiv](https://arxiv.org/abs/2601.19541)
+[Paper](https://openreview.net/forum?id=tn2VAi1KIO) | [arXiv](https://arxiv.org/abs/2601.19541)
 
 Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics**.
 
@@ -30,7 +30,7 @@ conda env create -f environment.yml
 
 ## Dataset
 
-All datasets can be downloaded from [this link](URL). 
+All datasets can be downloaded from [this link](https://drive.google.com/drive/folders/1QKuVJI2qPmTUaW1HF-VcR6X4F4H_JdFr?usp=sharing). 
 <!-- Checkpoints are available at [this link](URL).  -->
 
 - **Double Cylinder**
