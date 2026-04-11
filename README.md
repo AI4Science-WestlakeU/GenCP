@@ -4,7 +4,7 @@
 
 Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics**.
 
-Tianrun Gao*, Haoren Zheng*, Wenhao Deng*, Haodong Feng, Tao Zhang, Ruiqi Feng, Qianyi Chen, Tailin Wu.
+[Tianrun Gao](https://gaotianrun1.github.io/)*, Haoren Zheng*, Wenhao Deng*, Haodong Feng, Tao Zhang, Ruiqi Feng, [Qianyi Chen](https://chen458438184.wixsite.com/biography)†, [Tailin Wu](https://tailin.org/)†.
 
 We introduce a novel framework for learning decoupled physics and generating coupled multi-physics systems using Conditional Flow Matching. Our method leverages Conditional Flow Matching (CFM) to learn joint distributions of coupled physical fields, enabling accurate and efficient generation of complex multi-physics phenomena.
 
