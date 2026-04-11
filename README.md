@@ -101,10 +101,6 @@ If you find our work and/or our code useful, please cite us via:
 }
 ```
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Contact
 
-For questions and issues, please contact: gaotianrun@westlake.edu.cn
+For questions and issues, please contact: gaotianrun@westlake.edu.cn or wutailin@westlake.edu.cn
