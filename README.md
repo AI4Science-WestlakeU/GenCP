@@ -1,6 +1,6 @@
 # GenCP: Towards Generative Modeling Paradigm of Coupled physics (ICLR 2026)
 
-[Paper](https://openreview.net/forum?id=tn2VAi1KIO) | [arXiv](https://arxiv.org/abs/2601.19541)
+[paper](https://openreview.net/forum?id=tn2VAi1KIO) | [arXiv](https://arxiv.org/abs/2601.19541)
 
 Official repo for the paper **GenCP: Towards Generative Modeling Paradigm of Coupled physics**.
 
